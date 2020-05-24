@@ -1,18 +1,20 @@
 package com.randikalakmal.springreddit.service;
 
 import com.randikalakmal.springreddit.dto.RegisterRequest;
+import com.randikalakmal.springreddit.exception.SpringRedditException;
 import com.randikalakmal.springreddit.model.NotificationEmail;
 import com.randikalakmal.springreddit.model.User;
 import com.randikalakmal.springreddit.model.VerificationToken;
 import com.randikalakmal.springreddit.repository.UserRepository;
 import com.randikalakmal.springreddit.repository.VerificationTokenRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -54,4 +56,17 @@ public class AuthService {
         return token;
     }
 
+    public void verifyAccount(String token) {
+        Optional<VerificationToken> verificationToken = verificationTokenRepository.findByToken(token);
+        verificationToken.orElseThrow(()->new SpringRedditException("Invalid Token"));
+        fetchUserAndEnable(verificationToken.get());
+    }
+
+    @Transactional
+    private void fetchUserAndEnable(VerificationToken verificationToken) {
+        String username = verificationToken.getUser().getUsername();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringRedditException("User not found with name - " + username));
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
 }
