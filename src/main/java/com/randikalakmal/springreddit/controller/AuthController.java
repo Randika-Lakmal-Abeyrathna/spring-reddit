@@ -1,5 +1,7 @@
 package com.randikalakmal.springreddit.controller;
 
+import com.randikalakmal.springreddit.dto.AuthenticationResponse;
+import com.randikalakmal.springreddit.dto.LoginRequest;
 import com.randikalakmal.springreddit.dto.RegisterRequest;
 import com.randikalakmal.springreddit.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -25,5 +27,10 @@ public class AuthController {
 
         authService.verifyAccount(token);
         return new ResponseEntity<>("Account Activated Successfully",HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 }
