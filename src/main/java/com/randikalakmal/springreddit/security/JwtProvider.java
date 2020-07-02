@@ -4,6 +4,7 @@ package com.randikalakmal.springreddit.security;
 import com.randikalakmal.springreddit.exception.SpringRedditException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
@@ -13,11 +14,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.time.Instant;
+import java.util.Date;
 
 @Service
 public class JwtProvider {
 
     private KeyStore keyStore;
+    @Value("${jwt.expiration.time}")
+    private Long jwtExpirationInMills;
 
     @PostConstruct
     public void init() {
@@ -36,6 +41,15 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(principal.getUsername())
                 .signWith(getPrivateKey())
+                .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMills)))
+                .compact();
+    }
+
+    public String generateTokenWithUserName(String username){
+        return Jwts.builder()
+                .setSubject(username)
+                .signWith(getPrivateKey())
+                .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMills)))
                 .compact();
     }
 
@@ -70,6 +84,7 @@ public class JwtProvider {
         return claims.getSubject();
     }
 
-
-
+    public Long getJwtExpirationInMills() {
+        return jwtExpirationInMills;
+    }
 }
