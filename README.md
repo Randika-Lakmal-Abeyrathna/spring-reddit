@@ -1,2 +1,2 @@
 # spring-reddit
-reddit cone application using spring boot
+reddit clone application using spring boot
